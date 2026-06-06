@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  teams     Team[]
+  users     User[]
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("companies")
+}
+
+model Team {
+  id         String           @id @default(uuid())
+  name       String
+  company    Company          @relation(fields: [companyId], references: [id])
+  companyId  String           @map("company_id")
+  members    UserTeam[]
+  analyses   AnalysisAccess[]
+  createdAt  DateTime         @default(now()) @map("created_at")
+  @@unique([companyId, name])
+  @@map("teams")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  name         String
+  company      Company    @relation(fields: [companyId], references: [id])
+  companyId    String     @map("company_id")
+  teams        UserTeam[]
+  analyses     Analysis[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+  @@map("users")
+}
+
+model UserTeam {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String @map("team_id")
+  @@id([userId, teamId])
+  @@map("user_teams")
+}
+
+model Analysis {
+  id               String           @id @default(uuid())
+  title            String
+  description      String
+  tags             String[]
+  author           User             @relation(fields: [authorId], references: [id])
+  authorId         String           @map("author_id")
+  fileKey          String           @map("file_key")
+  fileKind         FileKind         @map("file_kind")
+  fileSize         Int              @map("file_size")
+  originalFilename String           @map("original_filename")
+  teamAccess       AnalysisAccess[]
+  deletedAt        DateTime?        @map("deleted_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  @@index([deletedAt, createdAt])
+  @@map("analyses")
+}
+
+enum FileKind {
+  XLSX
+  PDF
+}
+
+model AnalysisAccess {
+  analysis   Analysis @relation(fields: [analysisId], references: [id])
+  analysisId String   @map("analysis_id")
+  team       Team     @relation(fields: [teamId], references: [id])
+  teamId     String   @map("team_id")
+  @@id([analysisId, teamId])
+  @@map("analysis_access")
+}
+
+// ============================================================================
+// Pipeline-owned tables (read/written by services/pipeline + services/analyzer)
+// social service never touches these. See docs/data_model.md.
+// ============================================================================
+
+model Competition {
+  competitionId  String   @id @map("competition_id")        // TM id "GB1", "ES1"…
+  name           String
+  country        String?
+  tier           Int?     @db.SmallInt
+  fbrefCompName  String?  @map("fbref_comp_name")           // "Premier League"
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  clubs          Club[]
+  @@map("competitions")
+}
+
+model Club {
+  clubId         Int          @id @map("club_id")
+  name           String
+  nameNorm       String       @map("name_norm")
+  competition    Competition? @relation(fields: [competitionId], references: [competitionId])
+  competitionId  String?      @map("competition_id")
+  country        String?
+  stadiumName    String?      @map("stadium_name")
+  squadSize      Int?         @map("squad_size") @db.SmallInt
+  averageAge     Decimal?     @map("average_age") @db.Decimal(4, 2)
+  lastSeason     Int?         @map("last_season") @db.SmallInt
+  url            String?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime?    @updatedAt @map("updated_at") @db.Timestamptz()
+  players        Player[]
+  valuations     PlayerValuation[]
+  @@index([nameNorm])
+  @@map("clubs")
+}
+
+model Season {
+  seasonId        String   @id @map("season_id")             // "2025-2026"
+  startYear       Int      @map("start_year") @db.SmallInt
+  endYear         Int      @map("end_year") @db.SmallInt
+  mvStartCutoff   DateTime @map("mv_start_cutoff") @db.Date
+  mvEndCutoff     DateTime @map("mv_end_cutoff") @db.Date
+  isComplete      Boolean  @default(false) @map("is_complete")
+  fbrefStats      PlayerSeasonStatsFbref[]
+  panels          PlayerSeasonPanel[]
+  bridgeHealth    BridgeHealth[]
+  @@map("seasons")
+}
+
+model Player {
+  tmPlayerId        Int       @id @map("tm_player_id")
+  name              String
+  nameNorm          String    @map("name_norm")
+  firstName         String?   @map("first_name")
+  lastName          String?   @map("last_name")
+  dateOfBirth       DateTime? @map("date_of_birth") @db.Date
+  dobYear           Int?      @map("dob_year") @db.SmallInt
+  countryOfBirth    String?   @map("country_of_birth")
+  citizenship       String?
+  nationIso         String?   @map("nation_iso")
+  subPosition       String?   @map("sub_position")
+  position          String?
+  posPool           String?   @map("pos_pool")
+  foot              String?
+  heightCm          Int?      @map("height_cm") @db.SmallInt
+  currentClub       Club?     @relation(fields: [currentClubId], references: [clubId])
+  currentClubId     Int?      @map("current_club_id")
+  contractExpires   DateTime? @map("contract_expires") @db.Date
+  agentName         String?   @map("agent_name")
+  lastSeason        Int?      @map("last_season") @db.SmallInt
+  url               String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  valuations        PlayerValuation[]
+  bridgeRows        PlayerIdBridge[]
+  panels            PlayerSeasonPanel[]
+  @@index([nameNorm, dobYear])
+  @@index([nationIso])
+  @@index([posPool])
+  @@map("players")
+}
+
+model PlayerValuation {
+  player           Player   @relation(fields: [tmPlayerId], references: [tmPlayerId])
+  tmPlayerId       Int      @map("tm_player_id")
+  valuationDate    DateTime @map("valuation_date") @db.Date
+  marketValueEur   BigInt   @map("market_value_eur")
+  club             Club?    @relation(fields: [clubId], references: [clubId])
+  clubId           Int?     @map("club_id")
+  @@id([tmPlayerId, valuationDate])
+  @@index([tmPlayerId, valuationDate(sort: Desc)])
+  @@map("player_valuations")
+}
+
+model PlayerIdBridge {
+  fbrefKey         String   @id @map("fbref_key")            // sha1 of normalised tuple
+  fbrefPlayer      String   @map("fbref_player")
+  fbrefSquad       String   @map("fbref_squad")
+  fbrefComp        String   @map("fbref_comp")
+  fbrefBorn        Int?     @map("fbref_born") @db.SmallInt
+  fbrefNation      String?  @map("fbref_nation")
+  player           Player?  @relation(fields: [tmPlayerId], references: [tmPlayerId])
+  tmPlayerId       Int?     @map("tm_player_id")
+  matchConfidence  Decimal? @map("match_confidence") @db.Decimal(3, 2)
+  matchTier        Int?     @map("match_tier") @db.SmallInt
+  verified         Boolean  @default(false)
+  matchedAt        DateTime? @map("matched_at") @db.Timestamptz()
+  notes            String?
+  fbrefStats       PlayerSeasonStatsFbref[]
+  @@index([tmPlayerId])
+  @@index([verified, matchConfidence])
+  @@map("player_id_bridge")
+}
+
+model PlayerSeasonStatsFbref {
+  bridge            PlayerIdBridge @relation(fields: [fbrefKey], references: [fbrefKey])
+  fbrefKey          String         @map("fbref_key")
+  season            Season         @relation(fields: [seasonId], references: [seasonId])
+  seasonId          String         @map("season_id")
+  comp              String?
+  squad             String?
+  age               Int?           @db.SmallInt
+  mp                Int?           @db.SmallInt
+  starts            Int?           @db.SmallInt
+  minutes           Int?
+  nineties          Decimal?       @db.Decimal(6, 2)
+  gls               Int?           @db.SmallInt
+  ast               Int?           @db.SmallInt
+  gPk               Int?           @map("g_pk") @db.SmallInt
+  xg                Decimal?       @db.Decimal(6, 3)
+  npxg              Decimal?       @db.Decimal(6, 3)
+  xag               Decimal?       @db.Decimal(6, 3)
+  sh                Int?           @db.SmallInt
+  sot               Int?           @db.SmallInt
+  prgc              Int?           @db.SmallInt
+  prgp              Int?           @db.SmallInt
+  prgr              Int?           @db.SmallInt
+  tkl               Int?           @db.SmallInt
+  tklw              Int?           @db.SmallInt
+  intCol            Int?           @map("int_") @db.SmallInt   // SQL keyword guard
+  blocks            Int?           @db.SmallInt
+  clr               Int?           @db.SmallInt
+  sca               Int?           @db.SmallInt
+  gca               Int?           @db.SmallInt
+  touches           Int?
+  carries           Int?
+  psxg              Decimal?       @db.Decimal(6, 3)
+  saves             Int?           @db.SmallInt
+  savePct           Decimal?       @map("save_pct") @db.Decimal(5, 2)
+  rawJson           Json?          @map("raw_json")
+  hasOptaFeatures   Boolean?       @map("has_opta_features")
+  ingestedAt        DateTime       @default(now()) @map("ingested_at") @db.Timestamptz()
+  @@id([fbrefKey, seasonId])
+  @@index([seasonId])
+  @@map("player_season_stats_fbref")
+}
+
+model PlayerSeasonPanel {
+  player              Player    @relation(fields: [tmPlayerId], references: [tmPlayerId])
+  tmPlayerId          Int       @map("tm_player_id")
+  season              Season    @relation(fields: [seasonId], references: [seasonId])
+  seasonId            String    @map("season_id")
+  comp                String?
+  squad               String?
+  ageAtSeasonStart    Int       @map("age_at_season_start") @db.SmallInt
+  posPool             String    @map("pos_pool")
+  minutes             Int
+  multiSquadCount     Int       @default(1) @map("multi_squad_count") @db.SmallInt
+  mvStartEur          BigInt?   @map("mv_start_eur")
+  mvEndEur            BigInt?   @map("mv_end_eur")
+  mvStartDate         DateTime? @map("mv_start_date") @db.Date
+  mvEndDate           DateTime? @map("mv_end_date") @db.Date
+  dlogMv              Decimal?  @map("dlog_mv") @db.Decimal(8, 5)
+  features            Json
+  percentileInPool    Json?     @map("percentile_in_pool")
+  hasOptaFeatures     Boolean?  @map("has_opta_features")
+  matchConfidence     Decimal?  @map("match_confidence") @db.Decimal(3, 2)
+  builtAt             DateTime  @default(now()) @map("built_at") @db.Timestamptz()
+  @@id([tmPlayerId, seasonId])
+  @@index([seasonId, posPool])
+  @@index([seasonId, multiSquadCount])
+  @@map("player_season_panel")
+}
+
+model BridgeHealth {
+  season          Season   @relation(fields: [seasonId], references: [seasonId])
+  seasonId        String   @map("season_id")
+  checkedAt       DateTime @default(now()) @map("checked_at") @db.Timestamptz()
+  fbrefRows       Int      @map("fbref_rows")
+  matchedRows     Int      @map("matched_rows")
+  verifiedRows    Int      @map("verified_rows")
+  coveragePct     Decimal  @map("coverage_pct") @db.Decimal(5, 2)
+  collisions      Int                              // total: transfers + true_collisions
+  transfers       Int      @default(0)             // legitimate mid-season moves
+  trueCollisions  Int      @default(0) @map("true_collisions")
+  driftFlags      Int      @map("drift_flags")
+  @@id([seasonId, checkedAt])
+  @@map("bridge_health")
+}

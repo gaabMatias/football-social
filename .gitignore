@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+*.js.map
+*.tsbuildinfo
+
+# Build artifacts
+api/dist/
+web/dist/
+
+# Ambiente
+.env
+
+# Storage de arquivos enviados
+data/storage/*
+!data/storage/.gitkeep
+
+# Editores
+.idea/
+.vscode/
+*.swp

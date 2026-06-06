@@ -1,0 +1,692 @@
+{
+  "info": {
+    "name": "football_core / social",
+    "description": "Every request exercised by services/social/scripts/smoke.sh.\n\nRun the folders in order (Postman Runner). Each request captures IDs / tokens into collection variables, so later requests chain automatically.\n\n**Before running:** start the service (`cd services/social && npx tsx src/index.ts`) and reset the DB (`npx prisma migrate reset --force --skip-seed`) for a clean slate.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",       "value": "http://localhost:3000" },
+    { "key": "admin_token",    "value": "dev_admin_token_at_least_16_chars" },
+    { "key": "company_acme",   "value": "" },
+    { "key": "company_gamma",  "value": "" },
+    { "key": "team_scouts",    "value": "" },
+    { "key": "team_analysts",  "value": "" },
+    { "key": "team_observers", "value": "" },
+    { "key": "user_alice",     "value": "" },
+    { "key": "user_bob",       "value": "" },
+    { "key": "user_carol",     "value": "" },
+    { "key": "token_alice",    "value": "" },
+    { "key": "token_bob",      "value": "" },
+    { "key": "token_carol",    "value": "" },
+    { "key": "analysis_id",    "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0 Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('status=ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1 Admin – Companies",
+      "item": [
+        {
+          "name": "Create Company Acme",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Acme\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/companies", "host": ["{{base_url}}"], "path": ["admin", "companies"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('company_acme', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Company Gamma",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Gamma\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/companies", "host": ["{{base_url}}"], "path": ["admin", "companies"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('company_gamma', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 Admin – Teams",
+      "item": [
+        {
+          "name": "Create Team Scouts in Acme",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Scouts\",\n  \"companyId\": \"{{company_acme}}\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/teams", "host": ["{{base_url}}"], "path": ["admin", "teams"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('team_scouts', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Team Analysts in Acme",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Analysts\",\n  \"companyId\": \"{{company_acme}}\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/teams", "host": ["{{base_url}}"], "path": ["admin", "teams"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('team_analysts', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Team Observers in Gamma",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Observers\",\n  \"companyId\": \"{{company_gamma}}\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/teams", "host": ["{{base_url}}"], "path": ["admin", "teams"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('team_observers', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 Auth",
+      "item": [
+        {
+          "name": "Register Alice (Acme / Scouts)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@acme.test\",\n  \"password\": \"passw0rd!\",\n  \"name\": \"Alice\",\n  \"companyId\": \"{{company_acme}}\",\n  \"teamIds\": [\"{{team_scouts}}\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('token_alice', body.token);",
+                  "pm.collectionVariables.set('user_alice', body.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Bob (Acme / Analysts)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@acme.test\",\n  \"password\": \"passw0rd!\",\n  \"name\": \"Bob\",\n  \"companyId\": \"{{company_acme}}\",\n  \"teamIds\": [\"{{team_analysts}}\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('token_bob', body.token);",
+                  "pm.collectionVariables.set('user_bob', body.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Carol (Gamma, no teams)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carol@gamma.test\",\n  \"password\": \"passw0rd!\",\n  \"name\": \"Carol\",\n  \"companyId\": \"{{company_gamma}}\",\n  \"teamIds\": []\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('token_carol', body.token);",
+                  "pm.collectionVariables.set('user_carol', body.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Alice",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@acme.test\",\n  \"password\": \"passw0rd!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('token present', () => pm.expect(pm.response.json().token).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /auth/me (Alice)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_alice}}" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('is Alice', () => pm.expect(pm.response.json().email).to.eql('alice@acme.test'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 Admin – Team members",
+      "item": [
+        {
+          "name": "Add Carol to Team Observers",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-admin-token", "value": "{{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{user_carol}}\"\n}" },
+            "url": {
+              "raw": "{{base_url}}/admin/teams/{{team_observers}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teams", "{{team_observers}}", "members"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('201', () => pm.response.to.have.status(201));"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 Analyses",
+      "item": [
+        {
+          "name": "Alice POST /analyses (grant Team Analysts)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_alice}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"U21 CB shortlist\",\n  \"body\": \"Pre-window draft.\",\n  \"tags\": [\"defender\", \"u21\"],\n  \"team_access\": [\"{{team_analysts}}\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/analyses", "host": ["{{base_url}}"], "path": ["analyses"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('analysis_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alice POST /analyses cross-company (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_alice}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"NopeShouldFail\",\n  \"body\": \"x\",\n  \"tags\": [],\n  \"team_access\": [\"{{team_observers}}\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/analyses", "host": ["{{base_url}}"], "path": ["analyses"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 TeamOutsideCompany', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().message).to.eql('TeamOutsideCompany');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bob GET /analyses/:id (expect 200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Carol GET /analyses/:id (expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_carol}}" }],
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alice PATCH /analyses/:id/access (to Team Scouts only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_alice}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"team_access\": [\"{{team_scouts}}\"]\n}" },
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}/access",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}", "access"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bob PATCH /analyses/:id/access (expect 403 NotOwner)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_bob}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"team_access\": [\"{{team_analysts}}\"]\n}" },
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}/access",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}", "access"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 NotOwner', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().message).to.eql('NotOwner');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bob DELETE /analyses/:id (expect 403 NotOwner)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alice DELETE /analyses/:id (expect 204)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_alice}}" }],
+            "url": {
+              "raw": "{{base_url}}/analyses/{{analysis_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["analyses", "{{analysis_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('204', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 Feed",
+      "item": [
+        {
+          "name": "Bob GET /feed (expect 1 item)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": { "raw": "{{base_url}}/feed", "host": ["{{base_url}}"], "path": ["feed"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const items = pm.response.json().items;",
+                  "pm.test('>=1 item', () => pm.expect(items.length).to.be.at.least(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Carol GET /feed (expect 0 items)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_carol}}" }],
+            "url": { "raw": "{{base_url}}/feed", "host": ["{{base_url}}"], "path": ["feed"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('empty', () => pm.expect(pm.response.json().items).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bob GET /feed?tag=defender",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": {
+              "raw": "{{base_url}}/feed?tag=defender",
+              "host": ["{{base_url}}"],
+              "path": ["feed"],
+              "query": [{ "key": "tag", "value": "defender" }]
+            }
+          }
+        },
+        {
+          "name": "Bob GET /feed?tag=nope",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": {
+              "raw": "{{base_url}}/feed?tag=nope",
+              "host": ["{{base_url}}"],
+              "path": ["feed"],
+              "query": [{ "key": "tag", "value": "nope" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('empty', () => pm.expect(pm.response.json().items).to.eql([]));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bob GET /feed?author_id=alice",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_bob}}" }],
+            "url": {
+              "raw": "{{base_url}}/feed?author_id={{user_alice}}",
+              "host": ["{{base_url}}"],
+              "path": ["feed"],
+              "query": [{ "key": "author_id", "value": "{{user_alice}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 Access failures",
+      "item": [
+        {
+          "name": "GET /auth/me without token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /admin/companies without admin token (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Z\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/companies", "host": ["{{base_url}}"], "path": ["admin", "companies"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with wrong password (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@acme.test\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

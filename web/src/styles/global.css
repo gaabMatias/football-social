@@ -1,0 +1,185 @@
+:root {
+  --bg-deep: #0F1117;
+  --bg-primary: #14161E;
+  --bg-surface: #1B1D27;
+  --bg-elevated: #23262F;
+  --bg-hover: #2B2E3A;
+  --bg-input: #121319;
+
+  --border-default: #2D303D;
+  --border-subtle: #22242E;
+  --border-focus: #6C6DCC;
+
+  --text-primary: #E6E7EC;
+  --text-secondary: #8C8E9C;
+  --text-tertiary: #5A5C6A;
+
+  --accent: #9B9CF8;
+  --accent-solid: #7C7DE0;
+  --accent-dim: #2B2B50;
+  --accent-bg: rgba(155, 156, 248, 0.08);
+
+  --success: #7DD3A8;
+  --success-bg: rgba(125, 211, 168, 0.08);
+  --warning: #F0C38E;
+  --warning-bg: rgba(240, 195, 142, 0.08);
+  --error: #E88B8B;
+  --error-bg: rgba(232, 139, 139, 0.08);
+  --info: #7EB8E5;
+  --info-bg: rgba(126, 184, 229, 0.08);
+
+  --tag-1: #B39DDB;
+  --tag-2: #90CAF9;
+  --tag-3: #A5D6A7;
+  --tag-4: #F48FB1;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(45, 48, 61, 0.5);
+  --shadow-elevated: 0 4px 24px rgba(0, 0, 0, 0.5);
+
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --sidebar-width: 232px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 22px; font-weight: 800; }
+h2 { font-size: 16px; font-weight: 700; }
+h3 { font-size: 14px; font-weight: 600; }
+
+p { margin: 0; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent-solid);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) var(--bg-primary);
+}
+
+.overline {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-deep);
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 40px;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    padding: 20px 16px;
+  }
+}
